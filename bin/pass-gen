@@ -1,0 +1,21 @@
+#!/bin/sh -e
+##:
+#h: Usage: pass-gen : Generate 3 new passwords.
+##:
+pass_gen() {
+    if which openssl >/dev/null 2>&1; then
+        echo -n "Pass1: "; openssl rand 256 | tr -dc A-Z-a-z-0-9 | head -c10;echo;
+        echo -n "Pass2: "; openssl rand 256 | tr -dc A-Z-a-z-0-9 | head -c10;echo;
+        echo -n "Pass3: "; openssl rand 256 | tr -dc A-Z-a-z-0-9 | head -c10;echo;
+    elif test -r /dev/urandom; then
+        echo -n "Pass1: "; tr -dc A-Z-a-z-0-9 < /dev/urandom | head -c10;echo;
+        echo -n "Pass2: "; tr -dc A-Z-a-z-0-9 < /dev/urandom | head -c10;echo;
+        echo -n "Pass3: "; tr -dc A-Z-a-z-0-9 < /dev/urandom | head -c10;echo;
+    fi
+}
+if test @"$(basename "$0")" = @"pass-gen";then
+    case "${1}" in
+        -h|--help) sed -n 's/^ *#h: \{0,1\}//p' "$0" ;;
+        *)         pass_gen "$@"; exit 0;;
+    esac
+fi

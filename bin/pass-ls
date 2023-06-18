@@ -1,0 +1,19 @@
+#!/bin/sh -e
+##:
+#h: Usage: pass-ls : List passwords.
+##:
+pass_ls() {
+    local d="${PASSWORD_STORE_DIR:-${HOME}/.password-store}"
+    if test ! -d "${d}"; then
+        return 0
+    fi 
+    find "${d}" -type f -iname '*.gpg' 2>/dev/null \
+        | sed "s|\\.gpg\$||;s|^${d}/||" \
+        | sort
+}
+if test @"$(basename "$0")" = @"pass-ls";then
+    case "${1}" in
+        -h|--help) sed -n 's/^ *#h: \{0,1\}//p' "$0" ;;
+        *)         pass_ls "$@"; return 0;;
+    esac
+fi

@@ -1,0 +1,55 @@
+#!/bin/sh -e
+##:
+#h: Usage: pass-dmenu
+#h:
+#h: Fast password accessing tool.
+#h:
+#h: (1) If the clipboard contains an URL, displays an account list
+#h:     and stores the selected account. The username is stored in
+#h:     the clipboard.
+#h: (2) If the clipboard contains an account, types the password.
+#h:
+#h: Usage example:
+#h:
+#h: (1) Select an URL, and CTRL-C.
+#h: (2) CTRL-P to execute "pass-dmenu".
+#h: (3) Click in "username" and type CTRL-V.
+#h: (4) Click in "password" and type CTRP-P to execute "pass-dmenu".
+##:
+. pass-ls
+pass_dmenu() {
+    local clipboard="$( xclip -selection "clipboard" -o - 2>/dev/null  )"
+    local account="$(   xclip -selection "secondary" -o - 2>/dev/null  )"
+    ## Check it has an URL, select the account in that case.
+    local domain="$(printf '%s\n' "${clipboard}" | sed -n 's|^[^:]*://\([^/]*\).*|\1|p')"
+    if test -n "${domain}"; then
+        account="$(pass_ls | grep -iF "/${domain}/" | dmenu -l 10 -p 'Account:')"
+        if test ! -n "${account}"; then
+            dmenu -p 'Account not found.' < /dev/null
+            return 1
+        fi
+        basename "${account}" | tr -d '\n' | xclip -selection "clipboard"
+        basename "${account}" | tr -d '\n' | xclip -selection "primary"
+        echo     "${account}" | tr -d '\n' | xclip -selection "secondary"
+        echo "$(xclip -selection "clipboard" -o -)"
+        return 0
+    fi
+    ## Check it has an account, type password in that case.
+    if test -n "${account}"; then
+        account="$(pass_ls | grep -iFx "${account}" | head -n 1)"
+        xclip -selection "secondary" < /dev/null
+        if test -n "${account}"; then
+            local password="$(pass "${account}" | head -n 1)"
+            test ! -n "${password}" || xdotool type "${password}"
+        fi
+        xclip -selection "secondary" < /dev/null
+        return 0
+    fi
+}
+## -------------------------------------------------------------------
+if test @"$(basename "$0")" = @"pass-dmenu";then
+    case "${1}" in
+        -h|--help) sed -n 's/^ *#h: \{0,1\}//p' "$0";;
+        *)         pass_dmenu "$@"; exit 0;;
+    esac
+fi

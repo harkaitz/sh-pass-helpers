@@ -1,0 +1,20 @@
+#!/bin/sh -e
+##:
+#h: Usage: pass-del ACCOUNT ...
+##:
+pass_del() {
+    local a d="${PASSWORD_STORE_DIR:-${HOME}/.password-store}"
+    for a in "$@"; do
+        if test -f "${d}/${a}.gpg"; then
+            rm -vf "${d}/${a}.gpg"
+        elif test -d "${d}/${a}"; then
+            rmdir -v "${d}/${a}"  
+        fi
+    done
+}
+if test @"$(basename "$0")" = @"pass-del";then
+    case "${1}" in
+        ''|-h|--help) sed -n 's/^ *#h: \{0,1\}//p' "$0";;
+        *)            pass_del "$@"; exit 0;;
+    esac
+fi
