@@ -1,0 +1,20 @@
+#!/bin/sh -e
+##:
+#h: Usage: pass-x
+#h:
+#h: Select an account and print password.
+##:
+. pass-ls
+pass_x() {
+    local account="$(pass_ls | dmenu -p 'Account:' -l 10)"
+    test -n "${account}"
+    local password="$(pass "${account}" | head -n 1)"
+    test -n "${password}"
+    xdotool type "${password}"
+}
+if test @"$(basename "$0")" = @"pass-x";then
+    case "${1}" in
+        -h|--help) sed -n 's/^ *#h: \{0,1\}//p' "$0";;
+        *)         pass_x "$@"; exit 0;;
+    esac
+fi

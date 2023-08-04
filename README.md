@@ -35,6 +35,12 @@ pass-ls
 
     Usage: pass-ls : List passwords.
 
+pass-x
+
+    Usage: pass-x
+    
+    Select an account and print password.
+
 ## Collaborating
 
 For making bug reports, feature requests and donations visit
